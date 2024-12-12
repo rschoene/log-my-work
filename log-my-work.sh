@@ -63,6 +63,12 @@ initialize() {
         echo "This folder has already started a log. Delete \"$LOG_MY_WORK_FOLDER_RESULT_FOLDER\" to start over"
         exit 1
     else
+        mkdir -p ${LOG_MY_WORK_FOLDER_RESULT_FOLDER}
+        if [ $? -ne 0 ]; then
+           RET=${?}
+           echo "Could not create result directory '${LOG_MY_WORK_FOLDER_RESULT_FOLDER}' (${RET})"
+           return $?
+        fi
         execute_module_initialize
     fi
 }
@@ -95,7 +101,7 @@ fi
 
 LOG_MY_WORK_FOLDER=$(cd "$(dirname "$0")" && pwd)
 
-LOG_MY_WORK_FOLDER_RESULT_FOLDER=`pwd`/.log_my_work
+export LOG_MY_WORK_FOLDER_RESULT_FOLDER=`pwd`/.log_my_work
 
 echo "Script is located in: $LOG_MY_WORK_FOLDER"
 
@@ -111,6 +117,5 @@ case "$1" in
         ;;
     *)
         echo "Invalid argument. Usage: $0 <initialize|status|finalize>"
-        exit 1
         ;;
 esac

@@ -51,17 +51,18 @@ check_thermal_throttle() {
 
 # Function to initialize
 initialize() {
-    check_thermal_throttle "thermal_throttle_results_initial.json"
+    check_thermal_throttle "${LOG_MY_WORK_FOLDER_RESULT_FOLDER}/thermal_throttle_results_initial.json"
 }
 
 # Function to finalize
 finalize() {
-    check_thermal_throttle "thermal_throttle_results_final.json"
+    check_thermal_throttle "${LOG_MY_WORK_FOLDER_RESULT_FOLDER}/thermal_throttle_results_final.json"
 }
 
 # Function to check status
 status() {
-    check_thermal_throttle "-"
+    check_thermal_throttle "${LOG_MY_WORK_FOLDER_RESULT_FOLDER}/thermal_throttle_`date +%s%N`_final.json"
+    cat "$output_file"
 }
 
 
@@ -69,6 +70,11 @@ status() {
 if [ "$#" -ne 1 ]; then
     echo "Usage: $0 <initialize|status|finalize>"
     exit 1
+fi
+
+# if it is not a platform that supports the used files, skip this
+if [ ! -f "/sys/devices/system/cpu/cpu0/thermal_throttle/" ]; then
+  return
 fi
 
 case "$1" in
