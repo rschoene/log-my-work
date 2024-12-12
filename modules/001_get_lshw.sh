@@ -17,7 +17,7 @@ list_lshw() {
     fi
 
     # Create an initial JSON structure
-    printf "{ \"Module\": \"%s\", \"Description\": \"%s\", \"Version\": \"%s\", \"Results\": [" > "$output_file"
+    printf "{ \"Module\": \"%s\", \"Description\": \"%s\", \"Version\": \"%s\", }" > "${output_file}.info"
 
     # Iterate through all available CPUs
     lshw -json -quiet >>  $output_file

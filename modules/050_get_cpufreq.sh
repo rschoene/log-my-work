@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Function to check thermal throttle counts and write to JSON file
-check_thermal_throttle() {
+cpufreq() {
     module_name="intel_thermal_throttle"
     description="Checking thermal throttle counts for Intel CPUs"
     version="1.0"
@@ -20,21 +20,28 @@ check_thermal_throttle() {
     printf "{ \"Module\": \"%s\", \"Description\": \"%s\", \"Version\": \"%s\", \"Results\": [" > "$output_file"
 
     # Iterate through all available CPUs
-    for cpu_file in /sys/devices/system/cpu/cpu*/thermal_throttle; do
+    for cpu_file in /sys/devices/system/cpu/cpu*/cpufreq; do
         cpu=$(basename "$(dirname "$cpu_file")")
-        folder=$("$(dirname "$cpu_file")")
+        folder="$(dirname "$cpu_file")"
 
-        core_throttle_count_file="$folder/thermal_throttle/core_throttle_count"
-        package_throttle_count_file="$folder/thermal_throttle/package_throttle_count"
+        driver_file="$folder/cpufreq/scaling_driver"
+        governor_file="$folder/cpufreq/scaling_governor"
+        min_file="$folder/cpufreq/scaling_min_freq"
+        max_file="$folder/cpufreq/scaling_max_freq"
+        boost_file="$folder/cpufreq/cpb"
+        echo "Yay $folder"
 
         # Check if files exist
-        if [ -e "$core_throttle_count_file" ] && [ -e "$package_throttle_count_file" ]; then
+        if [ -e "$driver_file" ] && [ -e "$governor_file" ]&& [ -e "$min_file" ]&& [ -e "$max_file" ]&& [ -e "$cpb_file" ]; then
             # Read content of files
-            core_throttle_count=$(cat "$core_throttle_count_file")
-            package_throttle_count=$(cat "$package_throttle_count_file")
+            driver=$(cat "$driver_file")
+            governor_file=$(cat "$governor_file")
+            min=$(cat "$min_file")
+            max=$(cat "$max_file")
+            boost=$(cat "$boost_file")
 
             # Append data to JSON file
-            printf "  { \"CPU\": \"%s\", \"Core_Throttle_count\": %s, \"Package_Throttle_count\": %s }," "$cpu" "$core_throttle_count" "$package_throttle_count" >> "$output_file"
+            printf "  { \"CPU\": \"%s\", \"Driver\": %s, \"Governor\": %s , \"MinFreq\": %s, \"MaxFreq\": %s, \"Boost\": %s  }," "$cpu" "$driver" "$governor_file" "$min" "$max" "$boost">> "$output_file"
         fi
     done
 
@@ -52,18 +59,17 @@ check_thermal_throttle() {
 
 # Function to initialize
 initialize() {
-    check_thermal_throttle "${LOG_MY_WORK_FOLDER_RESULT_FOLDER}/thermal_throttle_results_initial.json"
+    cpufreq "${LOG_MY_WORK_FOLDER_RESULT_FOLDER}/cpufreq_initial.json"
 }
 
 # Function to finalize
 finalize() {
-    check_thermal_throttle "${LOG_MY_WORK_FOLDER_RESULT_FOLDER}/thermal_throttle_results_final.json"
+    cpufreq "${LOG_MY_WORK_FOLDER_RESULT_FOLDER}/cpufreq_final.json"
 }
 
 # Function to check status
 status() {
-    check_thermal_throttle "${LOG_MY_WORK_FOLDER_RESULT_FOLDER}/thermal_throttle_`date +%s%N`_final.json"
-    cat "$output_file"
+    cpufreq "${LOG_MY_WORK_FOLDER_RESULT_FOLDER}/cpufreq_`date +%s%N`.json"
 }
 
 
@@ -74,7 +80,7 @@ if [ "$#" -ne 1 ]; then
 fi
 
 # if it is not a platform that supports the used files, skip this
-if [ ! -f "/sys/devices/system/cpu/cpu0/thermal_throttle/" ]; then
+if [ ! -d "/sys/devices/system/cpu/cpufreq" ]; then
   return
 fi
 

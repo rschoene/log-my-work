@@ -31,7 +31,9 @@ initialize() {
 # Function to finalize
 finalize() {
     if [ -f "${LOG_MY_WORK_FOLDER_RESULT_FOLDER}/shell_content" ]; then
-        exit 0
+        chmod uga-w -R ${LOG_MY_WORK_FOLDER_RESULT_FOLDER}
+        echo "Exit"
+        exit
     fi
 }
 
@@ -58,6 +60,7 @@ case "$1" in
         ;;
     "finalize")
         finalize
+        exit
         ;;
     *)
         echo "Invalid argument. Usage: $0 <initialize|status|finalize>"

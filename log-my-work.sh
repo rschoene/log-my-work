@@ -119,3 +119,4 @@ case "$1" in
         echo "Invalid argument. Usage: $0 <initialize|status|finalize>"
         ;;
 esac
+
